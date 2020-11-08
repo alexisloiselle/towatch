@@ -1,4 +1,4 @@
-# to_watch
+# watchlist
 
 A new Flutter project.
 

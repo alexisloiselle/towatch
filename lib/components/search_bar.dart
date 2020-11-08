@@ -2,14 +2,25 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:to_watch/api/tmdb_api.dart';
-import 'package:to_watch/components/search_bar_item.dart';
-import 'package:to_watch/models/content.dart';
+import 'package:provider/provider.dart';
+import 'package:watchlist/api/google_api.dart';
+import 'package:watchlist/api/tmdb_api.dart';
+import 'package:watchlist/components/search_bar_item.dart';
+import 'package:watchlist/models/content.dart';
+import 'package:watchlist/state/content_type.dart';
+import 'package:watchlist/state/contents_state.dart';
 
 class SearchBar extends StatefulWidget {
-  final ContentType type;
+  final ContentTypeState contentTypeState;
+  final bool isSignIn;
+  final bool loading;
 
-  const SearchBar({Key key, this.type}) : super(key: key);
+  const SearchBar({
+    Key key,
+    this.contentTypeState,
+    this.isSignIn,
+    this.loading,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SearchBarState();
@@ -23,11 +34,28 @@ class _SearchBarState extends State<SearchBar>
   bool _isLoading = false;
   Timer _debounce;
 
+  _setIsLoading() {
+    setState(() {
+      _isLoading = true;
+    });
+  }
+
+  _reset() {
+    setState(() {
+      _contents = List();
+      _isLoading = false;
+    });
+  }
+
   _onSearchChanged() {
+    if (_searchQuery.text.isEmpty) {
+      _reset();
+      return;
+    }
+
     if (_focusNode.hasFocus) {
-      setState(() {
-        _isLoading = true;
-      });
+      _setIsLoading();
+
       if (_debounce?.isActive ?? false) _debounce.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
         _getData();
@@ -37,10 +65,7 @@ class _SearchBarState extends State<SearchBar>
 
   _onFocusChange() {
     if (!_focusNode.hasFocus) {
-      setState(() {
-        _isLoading = false;
-        _contents = List();
-      });
+      _reset();
     } else {
       _onSearchChanged();
     }
@@ -48,14 +73,10 @@ class _SearchBarState extends State<SearchBar>
 
   _getData() async {
     if (_searchQuery.text.isEmpty) {
-      setState(() {
-        _contents = List();
-        _isLoading = false;
-      });
       return;
     }
 
-    final function = widget.type == ContentType.movie
+    final function = widget.contentTypeState.contentType == ContentType.movie
         ? TmdbApi.queryMovies
         : TmdbApi.queryShows;
 
@@ -73,11 +94,14 @@ class _SearchBarState extends State<SearchBar>
     super.initState();
     _searchQuery.addListener(_onSearchChanged);
     _focusNode.addListener(_onFocusChange);
+    widget.contentTypeState.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
     _searchQuery.removeListener(_onSearchChanged);
+    _focusNode.removeListener(_onFocusChange);
+    widget.contentTypeState.removeListener(_onSearchChanged);
     _searchQuery.dispose();
     _debounce?.cancel();
     _contents = List();
@@ -88,60 +112,102 @@ class _SearchBarState extends State<SearchBar>
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 32),
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.symmetric(
+        horizontal: widget.isSignIn ? 0 : 32,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: widget.isSignIn ? 8 : 16,
+        vertical: widget.isSignIn ? 8 : 0,
+      ),
       decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              offset: Offset(2, 2),
-            )
-          ],
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(24)),
-          border: Border.all(
-              width: 1, color: Colors.black, style: BorderStyle.solid)),
-      child: Stack(
-        children: <Widget>[
-          TextField(
-            focusNode: _focusNode,
-            controller: _searchQuery,
-            decoration: InputDecoration(
-              hintText: "Add",
-              hintStyle: TextStyle(color: Color(0x45000000)),
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-            ),
-          ),
-          AnimatedSize(
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            vsync: this,
-            child: Container(
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: _isLoading
-                    ? [
-                        Container(
-                          margin: EdgeInsets.only(top: 64, bottom: 16),
-                          width: double.infinity,
-                          child: CupertinoActivityIndicator(),
-                        )
-                      ]
-                    : _contents
-                        .asMap()
-                        .entries
-                        .map(
-                          (e) => SearchBarItem(
-                              content: e.value,
-                              index: e.key,
-                              totalLength: _contents.length),
-                        )
-                        .toList(),
-              ),
-            ),
-          ),
+        boxShadow: [
+          BoxShadow(
+            offset: Offset(2, 2),
+            blurRadius: 0,
+          )
         ],
+        color: Colors.white,
+        borderRadius: BorderRadius.all(
+          Radius.circular(widget.isSignIn ? 32 : 24),
+        ),
+        border: Border.all(
+          width: 1,
+          color: Colors.black,
+          style: BorderStyle.solid,
+        ),
+      ),
+      child: Stack(
+        children: widget.isSignIn
+            ? [
+                widget.loading
+                    ? Align(
+                        alignment: Alignment.center,
+                        child: CupertinoActivityIndicator(),
+                      )
+                    : Image(image: AssetImage("assets/icons/google.png"))
+              ]
+            : [
+                buildTextField(),
+                buildAnimatedSize(),
+              ],
+      ),
+    );
+  }
+
+  TextField buildTextField() {
+    return TextField(
+      focusNode: _focusNode,
+      controller: _searchQuery,
+      decoration: InputDecoration(
+        hintText: "Add",
+        hintStyle: TextStyle(
+          color: Color(0x45000000),
+        ),
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+      ),
+    );
+  }
+
+  AnimatedSize buildAnimatedSize() {
+    _handleTap(Content content) => () async {
+          _setIsLoading();
+          final contents = await GoogleApi.addContent(content);
+          Provider.of<ContentsState>(context, listen: false).update(contents);
+          _reset();
+          _searchQuery.text = "";
+          _focusNode.unfocus();
+        };
+
+    return AnimatedSize(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      vsync: this,
+      child: Container(
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: _isLoading
+              ? [
+                  Container(
+                    margin: EdgeInsets.only(top: 64, bottom: 16),
+                    width: double.infinity,
+                    child: CupertinoActivityIndicator(),
+                  )
+                ]
+              : _contents
+                  .asMap()
+                  .entries
+                  .map(
+                    (e) => SearchBarItem(
+                      content: e.value,
+                      index: e.key,
+                      totalLength: _contents.length,
+                      didTap: _handleTap(e.value),
+                    ),
+                  )
+                  .toList(),
+        ),
       ),
     );
   }

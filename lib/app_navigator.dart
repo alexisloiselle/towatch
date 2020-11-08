@@ -1,37 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:to_watch/components/search_header.dart';
-import 'package:to_watch/models/content.dart';
-import 'package:to_watch/pages/movies.dart';
-import 'package:to_watch/pages/shows.dart';
+import 'package:provider/provider.dart';
+import 'package:watchlist/components/search_header.dart';
+import 'package:watchlist/models/content.dart';
+import 'package:watchlist/pages/movies.dart';
+import 'package:watchlist/pages/shows.dart';
+import 'package:watchlist/state/content_type.dart';
 
 class AppNavigator extends StatefulWidget {
-  const AppNavigator({Key key}) : super(key: key);
+  final bool loading;
+
+  const AppNavigator({Key key, this.loading}) : super(key: key);
   @override
-  AppNavigatorState createState() => new AppNavigatorState();
+  _AppNavigatorState createState() => new _AppNavigatorState();
 }
 
-class AppNavigatorState extends State<AppNavigator>
+class _AppNavigatorState extends State<AppNavigator>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
-  int _activeIndex = 0;
-  double _animationValue = 0.0;
 
   @override
   void initState() {
     super.initState();
     _tabController = new TabController(vsync: this, length: 2);
-
-    _tabController.animation.addListener(() {
-      setState(() {
-        _animationValue = _tabController.animation.value;
-      });
-    });
-
-    _tabController.addListener(() {
-      setState(() {
-        _activeIndex = _tabController.index;
-      });
-    });
   }
 
   @override
@@ -42,6 +32,11 @@ class AppNavigatorState extends State<AppNavigator>
 
   @override
   Widget build(BuildContext context) {
+    _tabController.addListener(() {
+      Provider.of<ContentTypeState>(context, listen: false).update(
+          _tabController.index == 0 ? ContentType.movie : ContentType.show);
+    });
+
     return Scaffold(
       body: Stack(
         children: [
@@ -52,7 +47,10 @@ class AppNavigatorState extends State<AppNavigator>
               Shows(),
             ],
           ),
-          SearchHeader(animationValue: _animationValue),
+          SearchHeader(
+            animation: _tabController.animation,
+            loading: widget.loading,
+          ),
         ],
       ),
     );
