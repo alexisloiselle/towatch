@@ -1,16 +1,22 @@
-import 'package:googleapis/sheets/v4.dart';
+import 'dart:ui';
+
+import 'package:watchlist/constants.dart';
 
 import 'movie.dart';
 import 'show.dart';
 
 abstract class Content {
+  int index;
   final String title;
   final String year;
   final double rating;
   final DateTime addedOn;
-  final DateTime watchedOn;
+  DateTime watchedOn;
+
+  ContentType get contentType;
 
   Content({
+    this.index,
     this.title,
     this.year,
     this.rating,
@@ -18,11 +24,11 @@ abstract class Content {
     this.watchedOn,
   });
 
-  static Content fromSheets(List<Object> properties) {
+  static Content fromSheets(List<Object> properties, int index) {
     if (properties[0] == "movie") {
-      return Movie.fromSheets(properties);
+      return Movie.fromSheets(properties, index);
     } else {
-      return Show.fromSheets(properties);
+      return Show.fromSheets(properties, index);
     }
   }
 
@@ -30,3 +36,8 @@ abstract class Content {
 }
 
 enum ContentType { movie, show }
+
+extension ContentTypeExtension on ContentType {
+  Color get color => this == ContentType.movie ? moviesColor : showsColor;
+  String get title => this == ContentType.movie ? "Movies" : "Shows";
+}

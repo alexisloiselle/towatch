@@ -5,13 +5,18 @@ import 'package:watchlist/extensions/string.dart';
 import 'package:watchlist/extensions/object.dart';
 
 class Movie implements Content {
+  int index;
   final String title;
   final String year;
   final double rating;
   final DateTime addedOn;
-  final DateTime watchedOn;
+  DateTime watchedOn;
+
+  @override
+  ContentType get contentType => ContentType.movie;
 
   Movie({
+    this.index,
     this.title,
     this.year,
     this.rating,
@@ -42,8 +47,9 @@ class Movie implements Content {
     return movies;
   }
 
-  static Movie fromSheets(List<Object> properties) {
+  static Movie fromSheets(List<Object> properties, int index) {
     return Movie(
+      index: index,
       title: properties[1].cast<String>(),
       year: properties[2].cast<String>(),
       rating: double.tryParse(properties[3].cast<String>().asNotEmpty()) ?? 0,

@@ -140,11 +140,14 @@ class _SearchBarState extends State<SearchBar>
         children: widget.isSignIn
             ? [
                 widget.loading
-                    ? Align(
+                    ? Container(
                         alignment: Alignment.center,
+                        padding: EdgeInsets.symmetric(vertical: 14),
                         child: CupertinoActivityIndicator(),
                       )
-                    : Image(image: AssetImage("assets/icons/google.png"))
+                    : Image(
+                        image: AssetImage("assets/icons/google.png"),
+                      )
               ]
             : [
                 buildTextField(),
@@ -156,6 +159,7 @@ class _SearchBarState extends State<SearchBar>
 
   TextField buildTextField() {
     return TextField(
+      style: TextStyle(fontSize: 18),
       focusNode: _focusNode,
       controller: _searchQuery,
       decoration: InputDecoration(
@@ -172,8 +176,9 @@ class _SearchBarState extends State<SearchBar>
   AnimatedSize buildAnimatedSize() {
     _handleTap(Content content) => () async {
           _setIsLoading();
-          final contents = await GoogleApi.addContent(content);
-          Provider.of<ContentsState>(context, listen: false).update(contents);
+          final newContent = await GoogleApi.addContent(content);
+          Provider.of<ContentsState>(context, listen: false).add(newContent);
+
           _reset();
           _searchQuery.text = "";
           _focusNode.unfocus();

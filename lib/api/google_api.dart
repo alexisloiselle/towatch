@@ -51,22 +51,54 @@ class GoogleApi {
     final response = await _sheetsApi.spreadsheets.values
         .batchGet(_spreadsheetId, ranges: ["A1:F1000"]);
 
-    final values = response.valueRanges[0].values.toList();
+    final values = response.valueRanges[0].values
+            ?.where((element) => element.isNotEmpty)
+            ?.toList() ??
+        [];
 
-    return values.map((e) => Content.fromSheets(e)).toList();
+    return values
+        .asMap()
+        .entries
+        .map((e) => Content.fromSheets(e.value, e.key))
+        .toList();
   }
 
-  static Future<List<Content>> addContent(Content content) async {
-    await _sheetsApi.spreadsheets.values.append(
+  static Future<Content> addContent(Content content) async {
+    final response = await _sheetsApi.spreadsheets.values.append(
       ValueRange.fromJson({
-        'range': 'A1:E1000',
+        'range': 'A1:F1000',
         'values': content.toNewValues(),
       }),
       _spreadsheetId,
-      'A1:E1000',
+      'A1:F1000',
       valueInputOption: 'RAW',
     );
 
-    return await fetchWatchlist();
+    final index =
+        int.parse(response.updates.updatedRange.split(":")[1].substring(1)) - 1;
+    content.index = index;
+
+    return content;
+  }
+
+  static Future<Content> toggleWatchedOn(Content content) async {
+    final newWatchedOnValue =
+        content.watchedOn == null ? DateTime.now().toIso8601String() : "";
+
+    await _sheetsApi.spreadsheets.values.update(
+      ValueRange.fromJson({
+        'range': 'F${content.index + 1}',
+        'values': [
+          [newWatchedOnValue]
+        ],
+      }),
+      _spreadsheetId,
+      'F${content.index + 1}',
+      valueInputOption: 'RAW',
+    );
+
+    content.watchedOn = DateTime.tryParse(newWatchedOnValue);
+
+    return content;
   }
 }

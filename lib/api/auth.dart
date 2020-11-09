@@ -4,13 +4,39 @@ import 'package:googleapis/sheets/v4.dart';
 import 'package:watchlist/api/google_api.dart';
 
 class Auth {
-  static final GoogleSignIn googleSignIn =
+  static final GoogleSignIn _googleSignIn =
       GoogleSignIn.standard(scopes: [SheetsApi.DriveScope]);
-  static final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  static Future<GoogleSignInAccount> signInWithGoogle() async {
-    final account = await googleSignIn.signIn();
+  static Future<User> signInWithGoogle() async {
+    // Try sign in with previous user.
+    var account = await _googleSignIn.signInSilently();
+
+    if (account == null) {
+      account = await _googleSignIn.signIn();
+    }
+
+    assert(account != null);
+
     await GoogleApi.initialize(await account.authHeaders);
-    return account;
+    final authentication = await account.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+      accessToken: authentication.accessToken,
+      idToken: authentication.idToken,
+    );
+
+    final authResult = await _auth.signInWithCredential(credential);
+    final user = authResult.user;
+
+    if (user != null) {
+      assert(!user.isAnonymous);
+      assert(await user.getIdToken() != null);
+      assert(user.uid == _auth.currentUser.uid);
+
+      return user;
+    }
+
+    return null;
   }
 }

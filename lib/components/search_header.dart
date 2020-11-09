@@ -3,55 +3,51 @@ import 'package:provider/provider.dart';
 import 'package:watchlist/api/auth.dart';
 import 'package:watchlist/api/google_api.dart';
 import 'package:watchlist/components/search_bar.dart';
-import 'package:watchlist/constants.dart';
-import 'package:watchlist/models/content.dart';
 import 'package:watchlist/state/content_type.dart';
 import 'package:watchlist/state/contents_state.dart';
 
 class SearchHeader extends StatefulWidget {
-  final AnimationController animation;
+  final Color color;
   final bool loading;
 
-  const SearchHeader({Key key, this.animation, this.loading}) : super(key: key);
+  const SearchHeader({
+    Key key,
+    this.color,
+    this.loading,
+  }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _SearchHeaderState(animation, true);
+  State<StatefulWidget> createState() => _SearchHeaderState();
 }
 
 class _SearchHeaderState extends State<SearchHeader> {
-  final AnimationController animation;
-  final bool isSignIn;
-  Color _color = moviesColor;
-  bool _isSignIn;
+  bool _isSignIn = true;
+  bool _loading = false;
 
-  _SearchHeaderState(this.animation, this.isSignIn);
-
-  _changeColor() {
-    setState(() {
-      _color = Color.lerp(moviesColor, showsColor, animation.value);
-    });
-  }
+  _SearchHeaderState();
 
   _handleSignIn() async {
+    setState(() {
+      _loading = true;
+    });
+
     await Auth.signInWithGoogle();
     final contents = await GoogleApi.fetchWatchlist();
     Provider.of<ContentsState>(context, listen: false).addAll(contents);
 
     setState(() {
       _isSignIn = false;
+      _loading = false;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    animation.addListener(_changeColor);
-    _isSignIn = isSignIn;
   }
 
   @override
   void dispose() {
-    animation.removeListener(_changeColor);
     super.dispose();
   }
 
@@ -93,7 +89,7 @@ class _SearchHeaderState extends State<SearchHeader> {
           child: Consumer<ContentTypeState>(
             builder: (context, state, child) => SearchBar(
               isSignIn: _isSignIn,
-              loading: widget.loading,
+              loading: widget.loading || _loading,
               contentTypeState: state,
             ),
           ),
@@ -109,7 +105,7 @@ class _SearchHeaderState extends State<SearchHeader> {
       width: width,
       height: _y - 24,
       decoration: BoxDecoration(
-        color: _color,
+        color: widget.color,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(48),
           bottomRight: Radius.circular(48),

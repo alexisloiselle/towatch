@@ -1,43 +1,87 @@
-import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:watchlist/models/content.dart';
 import 'package:watchlist/models/movie.dart';
 import 'package:watchlist/models/show.dart';
 
+import 'list_model.dart';
+
+int _addedOnSorter(Content a, Content b) {
+  return a.addedOn == null
+      ? 1
+      : b.addedOn == null
+          ? -1
+          : b.addedOn.compareTo(a.addedOn);
+}
+
+int _watchedOnSorter(Content a, Content b) {
+  return a.watchedOn == null
+      ? -1
+      : b.watchedOn == null
+          ? 1
+          : 0;
+}
+
 class ContentsState extends ChangeNotifier {
-  List<Content> _contents = [];
+  final GlobalKey<AnimatedListState> moviesListKey;
+  final GlobalKey<AnimatedListState> showsListKey;
 
-  UnmodifiableListView<Content> get shows => UnmodifiableListView(
-        _contents.where((element) => element is Show),
-      );
+  ListModel<Movie> _movies;
+  ListModel<Show> _shows;
 
-  UnmodifiableListView<Content> get movies => UnmodifiableListView(
-        _contents.where((element) => element is Movie),
-      );
+  ContentsState({
+    this.moviesListKey,
+    this.showsListKey,
+  }) {
+    _movies = ListModel(
+      listKey: moviesListKey,
+      removedItemBuilder: (_, __, ___) {},
+      initialItems: [],
+    );
+    _shows = ListModel(
+      listKey: showsListKey,
+      removedItemBuilder: (_, __, ___) {},
+      initialItems: [],
+    );
+  }
+
+  ListModel<Movie> get moviesModel => _movies;
+  ListModel<Show> get showsModel => _shows;
 
   void add(Content content) {
-    _contents.add(content);
+    switch (content.contentType) {
+      case ContentType.movie:
+        _movies.insert(0, content);
+        break;
+      default:
+        _shows.insert(0, content);
+        break;
+    }
     notifyListeners();
   }
 
   void addAll(List<Content> contents) {
-    _contents.addAll(contents);
-    notifyListeners();
-  }
+    final movies = contents
+        .where((c) => c is Movie)
+        .map((e) => e as Movie)
+        .toList()
+          ..sort(_addedOnSorter)
+          ..sort(_watchedOnSorter);
 
-  void update(List<Content> contents) {
-    _contents = contents;
-    notifyListeners();
-  }
+    final shows = contents
+        .where((c) => c is Show)
+        .map((e) => e as Show)
+        .toList()
+          ..sort(_addedOnSorter)
+          ..sort(_watchedOnSorter);
 
-  void removeAll() {
-    _contents.clear();
-    notifyListeners();
-  }
+    for (int i = 0; i < movies.length; i++) {
+      _movies.insert(i, movies[i]);
+    }
 
-  @override
-  void dispose() {
-    removeAll();
-    super.dispose();
+    for (int i = 0; i < shows.length; i++) {
+      _shows.insert(i, shows[i]);
+    }
+
+    notifyListeners();
   }
 }

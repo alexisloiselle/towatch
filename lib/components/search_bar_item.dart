@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:watchlist/api/google_api.dart';
 import 'package:watchlist/models/content.dart';
-import 'package:watchlist/state/contents_state.dart';
 
 typedef void VoidCallback();
 

@@ -5,13 +5,18 @@ import 'package:watchlist/extensions/string.dart';
 import 'package:watchlist/extensions/object.dart';
 
 class Show implements Content {
+  int index;
   final String title;
   final String year;
   final double rating;
   final DateTime addedOn;
-  final DateTime watchedOn;
+  DateTime watchedOn;
+
+  @override
+  ContentType get contentType => ContentType.show;
 
   Show({
+    this.index,
     this.title,
     this.year,
     this.rating,
@@ -42,8 +47,9 @@ class Show implements Content {
     return shows;
   }
 
-  static Show fromSheets(List<Object> properties) {
+  static Show fromSheets(List<Object> properties, int index) {
     return Show(
+      index: index,
       title: properties[1].cast<String>(),
       year: properties[2].cast<String>(),
       rating: double.tryParse(properties[3].cast<String>().asNotEmpty()) ?? 0,

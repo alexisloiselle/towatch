@@ -6,12 +6,19 @@ import 'package:watchlist/app_navigator.dart';
 import 'package:watchlist/state/content_type.dart';
 import 'package:watchlist/state/contents_state.dart';
 
+final moviesListKey = GlobalKey<AnimatedListState>();
+final showsListKey = GlobalKey<AnimatedListState>();
+
 main() async {
   await DotEnv().load('.env');
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => ContentsState()),
+        ChangeNotifierProvider(
+            create: (context) => ContentsState(
+                  showsListKey: showsListKey,
+                  moviesListKey: moviesListKey,
+                )),
         ChangeNotifierProvider(create: (context) => ContentTypeState()),
       ],
       child: MyApp(),
@@ -45,6 +52,8 @@ class MyApp extends StatelessWidget {
               title: 'Watchlist',
               debugShowCheckedModeBanner: false,
               home: AppNavigator(
+                moviesListKey: moviesListKey,
+                showsListKey: showsListKey,
                 loading: snapshot.connectionState != ConnectionState.done,
               ),
             ),
