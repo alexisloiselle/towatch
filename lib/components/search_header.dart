@@ -22,16 +22,37 @@ class SearchHeader extends StatefulWidget {
 
 class _SearchHeaderState extends State<SearchHeader> {
   bool _isSignIn = true;
-  bool _loading = false;
+  bool _loading = true;
 
   _SearchHeaderState();
+
+  _trySignInSilently() async {
+    final user = await Auth.signInSilently();
+    if (user != null) {
+      await _fetchList();
+    } else {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   _handleSignIn() async {
     setState(() {
       _loading = true;
     });
 
-    await Auth.signInWithGoogle();
+    final user = await Auth.signInWithGoogle();
+    if (user != null) {
+      await _fetchList();
+    } else {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  _fetchList() async {
     final contents = await GoogleApi.fetchWatchlist();
     Provider.of<ContentsState>(context, listen: false).addAll(contents);
 
@@ -44,6 +65,7 @@ class _SearchHeaderState extends State<SearchHeader> {
   @override
   void initState() {
     super.initState();
+    _trySignInSilently();
   }
 
   @override

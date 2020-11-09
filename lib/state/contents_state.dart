@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:watchlist/components/content_cell.dart';
 import 'package:watchlist/models/content.dart';
 import 'package:watchlist/models/movie.dart';
 import 'package:watchlist/models/show.dart';
@@ -18,7 +19,7 @@ int _watchedOnSorter(Content a, Content b) {
       ? -1
       : b.watchedOn == null
           ? 1
-          : 0;
+          : b.watchedOn.compareTo(a.watchedOn);
 }
 
 class ContentsState extends ChangeNotifier {
@@ -34,13 +35,29 @@ class ContentsState extends ChangeNotifier {
   }) {
     _movies = ListModel(
       listKey: moviesListKey,
-      removedItemBuilder: (_, __, ___) {},
+      removedItemBuilder: _buildRemovedItem,
       initialItems: [],
     );
     _shows = ListModel(
       listKey: showsListKey,
-      removedItemBuilder: (_, __, ___) {},
+      removedItemBuilder: _buildRemovedItem,
       initialItems: [],
+    );
+  }
+
+  _buildRemovedItem(
+      Content item, BuildContext context, Animation<double> animation) {
+    final _animation = animation.drive(
+      CurveTween(curve: Curves.easeInCubic),
+    );
+    return SizeTransition(
+      sizeFactor: _animation,
+      child: FadeTransition(
+        opacity: _animation,
+        child: ContentCell(
+          content: item,
+        ),
+      ),
     );
   }
 
@@ -57,6 +74,33 @@ class ContentsState extends ChangeNotifier {
         break;
     }
     notifyListeners();
+  }
+
+  void toggleWatchedOn(Content content) {
+    final listModel = content.isMovie ? _movies : _shows;
+    List<Content> list = List.from(listModel.items);
+
+    final previousIndex = list.indexOf(content);
+
+    // Resort list
+    list.sort(_addedOnSorter);
+    list.sort(_watchedOnSorter);
+
+    final newIndex = list.indexOf(content);
+
+    if (previousIndex != newIndex) {
+      listModel.removeAt(previousIndex);
+      listModel.insert(newIndex, content);
+    }
+  }
+
+  void remove(Content content) {
+    final listModel = content.isMovie ? _movies : _shows;
+    List<Content> list = List.from(listModel.items);
+
+    final index = list.indexOf(content);
+
+    listModel.removeAt(index);
   }
 
   void addAll(List<Content> contents) {

@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 class ListModel<E> {
@@ -14,6 +16,7 @@ class ListModel<E> {
   final List<E> _items;
 
   AnimatedListState get _animatedList => listKey.currentState;
+  UnmodifiableListView<E> get items => UnmodifiableListView<E>(_items);
 
   void insert(int index, E item) {
     _items.insert(index, item);

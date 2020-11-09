@@ -15,6 +15,9 @@ class Show implements Content {
   @override
   ContentType get contentType => ContentType.show;
 
+  @override
+  bool get isMovie => false;
+
   Show({
     this.index,
     this.title,
@@ -49,14 +52,14 @@ class Show implements Content {
 
   static Show fromSheets(List<Object> properties, int index) {
     return Show(
-      index: index,
-      title: properties[1].cast<String>(),
-      year: properties[2].cast<String>(),
-      rating: double.tryParse(properties[3].cast<String>().asNotEmpty()) ?? 0,
-      addedOn: DateTime.tryParse(properties[4].cast<String>()),
-      watchedOn: properties.length < 6
+      index: int.parse(properties[0].cast<String>().asNotEmpty()),
+      title: properties[2].cast<String>(),
+      year: properties[3].cast<String>(),
+      rating: double.tryParse(properties[4].cast<String>().asNotEmpty()) ?? 0,
+      addedOn: DateTime.tryParse(properties[5].cast<String>()),
+      watchedOn: properties.length < 7
           ? null
-          : DateTime.tryParse(properties[5].cast<String>()),
+          : DateTime.tryParse(properties[6].cast<String>()),
     );
   }
 

@@ -159,11 +159,12 @@ class _SearchBarState extends State<SearchBar>
 
   TextField buildTextField() {
     return TextField(
-      style: TextStyle(fontSize: 18),
+      style: TextStyle(fontSize: 20),
       focusNode: _focusNode,
       controller: _searchQuery,
       decoration: InputDecoration(
-        hintText: "Add",
+        hintText:
+            "Add a ${widget.contentTypeState.contentType.singular}",
         hintStyle: TextStyle(
           color: Color(0x45000000),
         ),

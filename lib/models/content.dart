@@ -14,6 +14,7 @@ abstract class Content {
   DateTime watchedOn;
 
   ContentType get contentType;
+  bool get isMovie;
 
   Content({
     this.index,
@@ -25,7 +26,7 @@ abstract class Content {
   });
 
   static Content fromSheets(List<Object> properties, int index) {
-    if (properties[0] == "movie") {
+    if (properties[1] == "movie") {
       return Movie.fromSheets(properties, index);
     } else {
       return Show.fromSheets(properties, index);
@@ -40,4 +41,5 @@ enum ContentType { movie, show }
 extension ContentTypeExtension on ContentType {
   Color get color => this == ContentType.movie ? moviesColor : showsColor;
   String get title => this == ContentType.movie ? "Movies" : "Shows";
+  String get singular => this == ContentType.movie ? "movie" : "show";
 }

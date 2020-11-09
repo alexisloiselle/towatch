@@ -24,14 +24,21 @@ class Contents extends StatelessWidget {
               : state.showsModel;
 
           return AnimatedList(
+            padding: EdgeInsets.only(bottom: 24, top: 156),
             key: listKey,
             initialItemCount: contentsModel.length,
             itemBuilder: (context, index, animation) {
-              return ScaleTransition(
-                scale: animation.drive(CurveTween(curve: Curves.easeOutCubic)),
-                child: Padding(
-                  padding: EdgeInsets.only(top: index == 0 ? 192 : 0),
-                  child: ContentCell(content: contentsModel[index]),
+              final _animation = animation.drive(
+                CurveTween(curve: Curves.easeOutCubic),
+              );
+
+              return SizeTransition(
+                sizeFactor: _animation,
+                child: FadeTransition(
+                  opacity: _animation,
+                  child: ContentCell(
+                    content: contentsModel[index],
+                  ),
                 ),
               );
             },

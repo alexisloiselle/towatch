@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:watchlist/models/content.dart';
+import 'package:watchlist/extensions/string.dart';
 
 typedef void VoidCallback();
 
@@ -35,9 +36,32 @@ class SearchBarItem extends StatelessWidget {
               content.title,
               textAlign: TextAlign.start,
             ),
-            Text(
-              content.year.toString(),
-              textAlign: TextAlign.start,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              children: [
+                content.year.asNotEmpty() != null
+                    ? Row(
+                        children: [
+                          Text(
+                            content.year.toString(),
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                              color: Color(0x99000000),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 4,
+                          ),
+                        ],
+                      )
+                    : Container(),
+                Text("${content.rating.round().toString()}%",
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0x99000000),
+                    )),
+              ],
             ),
           ],
         ),

@@ -8,15 +8,19 @@ class Auth {
       GoogleSignIn.standard(scopes: [SheetsApi.DriveScope]);
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  static Future<User> signInWithGoogle() async {
+  static Future<User> signInSilently() {
+    return signInWithGoogle(silently: true);
+  }
+
+  static Future<User> signInWithGoogle({silently = false}) async {
     // Try sign in with previous user.
     var account = await _googleSignIn.signInSilently();
 
-    if (account == null) {
+    if (!silently && account == null) {
       account = await _googleSignIn.signIn();
     }
 
-    assert(account != null);
+    if (account == null) return null;
 
     await GoogleApi.initialize(await account.authHeaders);
     final authentication = await account.authentication;

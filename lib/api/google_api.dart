@@ -52,7 +52,14 @@ class GoogleApi {
         .batchGet(_spreadsheetId, ranges: ["A1:F1000"]);
 
     final values = response.valueRanges[0].values
-            ?.where((element) => element.isNotEmpty)
+            ?.asMap()
+            ?.entries
+            ?.map((e) {
+              List<String> list = List.from(e.value);
+              list.insert(0, "${e.key}");
+              return list;
+            })
+            ?.where((element) => element.length > 1)
             ?.toList() ??
         [];
 
@@ -100,5 +107,20 @@ class GoogleApi {
     content.watchedOn = DateTime.tryParse(newWatchedOnValue);
 
     return content;
+  }
+
+  static Future delete(Content content) async {
+    final index = content.index + 1;
+    await _sheetsApi.spreadsheets.values.update(
+      ValueRange.fromJson({
+        'range': 'A$index:F$index',
+        'values': [
+          ["", "", "", "", "", ""]
+        ],
+      }),
+      _spreadsheetId,
+      'A$index:F$index',
+      valueInputOption: 'RAW',
+    );
   }
 }
