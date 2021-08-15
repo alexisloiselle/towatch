@@ -11,9 +11,9 @@ class SearchHeader extends StatefulWidget {
   final bool loading;
 
   const SearchHeader({
-    Key key,
-    this.color,
-    this.loading,
+    Key? key,
+    required this.color,
+    required this.loading,
   }) : super(key: key);
 
   @override

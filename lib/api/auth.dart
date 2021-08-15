@@ -5,14 +5,14 @@ import 'package:watchlist/api/google_api.dart';
 
 class Auth {
   static final GoogleSignIn _googleSignIn =
-      GoogleSignIn.standard(scopes: [SheetsApi.DriveScope]);
+      GoogleSignIn.standard(scopes: [SheetsApi.driveScope]);
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  static Future<User> signInSilently() {
+  static Future<User?> signInSilently() {
     return signInWithGoogle(silently: true);
   }
 
-  static Future<User> signInWithGoogle({silently = false}) async {
+  static Future<User?> signInWithGoogle({silently = false}) async {
     // Try sign in with previous user.
     var account = await _googleSignIn.signInSilently();
 
@@ -35,8 +35,7 @@ class Auth {
 
     if (user != null) {
       assert(!user.isAnonymous);
-      assert(await user.getIdToken() != null);
-      assert(user.uid == _auth.currentUser.uid);
+      assert(user.uid == _auth.currentUser?.uid);
 
       return user;
     }

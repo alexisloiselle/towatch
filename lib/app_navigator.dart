@@ -13,10 +13,10 @@ class AppNavigator extends StatefulWidget {
   final GlobalKey<AnimatedListState> showsListKey;
 
   const AppNavigator({
-    Key key,
-    this.loading,
-    this.moviesListKey,
-    this.showsListKey,
+    Key? key,
+    required this.loading,
+    required this.moviesListKey,
+    required this.showsListKey,
   }) : super(key: key);
 
   @override
@@ -25,7 +25,7 @@ class AppNavigator extends StatefulWidget {
 
 class _AppNavigatorState extends State<AppNavigator>
     with SingleTickerProviderStateMixin {
-  TabController _tabController;
+  late TabController _tabController;
   Color _color = moviesColor;
 
   _handleChangeTab() {
@@ -49,7 +49,7 @@ class _AppNavigatorState extends State<AppNavigator>
   @override
   void dispose() {
     _tabController.removeListener(_handleChangeTab);
-    _tabController?.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 

@@ -22,45 +22,49 @@ class GoogleAuthClient extends BaseClient {
 }
 
 class GoogleApi {
-  static DriveApi _driveApi;
-  static SheetsApi _sheetsApi;
-  static GoogleAuthClient _authClient;
-  static String _spreadsheetId;
+  static late DriveApi _driveApi;
+  static late SheetsApi _sheetsApi;
+  static late GoogleAuthClient _authClient;
+  static late String? _spreadsheetId;
 
   static initialize(Map<String, String> authHeaders) async {
     _authClient = GoogleAuthClient(authHeaders);
+
     _sheetsApi = SheetsApi(_authClient);
     _driveApi = DriveApi(_authClient);
+
     _spreadsheetId = await getOrUploadWatchlistFile();
   }
 
   // Returns spreadsheet id
-  static Future<String> getOrUploadWatchlistFile() async {
+  static Future<String?> getOrUploadWatchlistFile() async {
     final FileList list = await _driveApi.files.list(
         q: "mimeType='application/vnd.google-apps.spreadsheet' and name='Watchlist'");
 
-    if (list.files.isNotEmpty) {
-      return list.files[0].id;
+    if (list.files != null && list.files!.isNotEmpty) {
+      return list.files![0].id;
     }
 
     return (await _sheetsApi.spreadsheets.create(defaultSpreadsheet))
         .spreadsheetId;
   }
 
-  static Future<List<Content>> fetchWatchlist() async {
-    final response = await _sheetsApi.spreadsheets.values
-        .batchGet(_spreadsheetId, ranges: ["A1:F1000"]);
+  static Future<List<Content>?> fetchWatchlist() async {
+    if (_spreadsheetId == null) return null;
 
-    final values = response.valueRanges[0].values
+    final response = await _sheetsApi.spreadsheets.values
+        .batchGet(_spreadsheetId!, ranges: ["A1:F1000"]);
+
+    final values = response.valueRanges?[0].values
             ?.asMap()
-            ?.entries
-            ?.map((e) {
+            .entries
+            .map((e) {
               List<String> list = List.from(e.value);
               list.insert(0, "${e.key}");
               return list;
             })
-            ?.where((element) => element.length > 1)
-            ?.toList() ??
+            .where((element) => element.length > 1)
+            .toList() ??
         [];
 
     return values
@@ -70,37 +74,45 @@ class GoogleApi {
         .toList();
   }
 
-  static Future<Content> addContent(Content content) async {
+  static Future<Content?> addContent(Content content) async {
+    if (_spreadsheetId == null) return null;
+
     final response = await _sheetsApi.spreadsheets.values.append(
       ValueRange.fromJson({
         'range': 'A1:F1000',
         'values': content.toNewValues(),
       }),
-      _spreadsheetId,
+      _spreadsheetId!,
       'A1:F1000',
       valueInputOption: 'RAW',
     );
 
-    final index =
-        int.parse(response.updates.updatedRange.split(":")[1].substring(1)) - 1;
-    content.index = index;
+    final indexString =
+        response.updates?.updatedRange?.split(":")[1].substring(1);
 
-    return content;
+    if (indexString != null) {
+      final index = int.parse(indexString) - 1;
+      content.index = index;
+
+      return content;
+    }
   }
 
   static Future<Content> toggleWatchedOn(Content content) async {
+    if (content.index == null || _spreadsheetId == null) return content;
+
     final newWatchedOnValue =
         content.watchedOn == null ? DateTime.now().toIso8601String() : "";
 
     await _sheetsApi.spreadsheets.values.update(
       ValueRange.fromJson({
-        'range': 'F${content.index + 1}',
+        'range': 'F${content.index! + 1}',
         'values': [
           [newWatchedOnValue]
         ],
       }),
-      _spreadsheetId,
-      'F${content.index + 1}',
+      _spreadsheetId!,
+      'F${content.index! + 1}',
       valueInputOption: 'RAW',
     );
 
@@ -110,7 +122,9 @@ class GoogleApi {
   }
 
   static Future delete(Content content) async {
-    final index = content.index + 1;
+    if (content.index == null || _spreadsheetId == null) return;
+
+    final index = content.index! + 1;
     await _sheetsApi.spreadsheets.values.update(
       ValueRange.fromJson({
         'range': 'A$index:F$index',
@@ -118,7 +132,7 @@ class GoogleApi {
           ["", "", "", "", "", ""]
         ],
       }),
-      _spreadsheetId,
+      _spreadsheetId!,
       'A$index:F$index',
       valueInputOption: 'RAW',
     );

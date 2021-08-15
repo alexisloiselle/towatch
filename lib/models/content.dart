@@ -6,21 +6,21 @@ import 'movie.dart';
 import 'show.dart';
 
 abstract class Content {
-  int index;
+  int? index;
   final String title;
   final String year;
   final double rating;
-  final DateTime addedOn;
-  DateTime watchedOn;
+  final DateTime? addedOn;
+  DateTime? watchedOn;
 
   ContentType get contentType;
   bool get isMovie;
 
   Content({
     this.index,
-    this.title,
-    this.year,
-    this.rating,
+    required this.title,
+    required this.year,
+    required this.rating,
     this.addedOn,
     this.watchedOn,
   });

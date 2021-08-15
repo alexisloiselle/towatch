@@ -16,10 +16,10 @@ class SearchBar extends StatefulWidget {
   final bool loading;
 
   const SearchBar({
-    Key key,
-    this.contentTypeState,
-    this.isSignIn,
-    this.loading,
+    Key? key,
+    required this.contentTypeState,
+    required this.isSignIn,
+    required this.loading,
   }) : super(key: key);
 
   @override
@@ -30,9 +30,9 @@ class _SearchBarState extends State<SearchBar>
     with SingleTickerProviderStateMixin {
   final _searchQuery = TextEditingController();
   final _focusNode = FocusNode();
-  List<Content> _contents = List();
+  List<Content> _contents = [];
   bool _isLoading = false;
-  Timer _debounce;
+  late Timer _debounce;
 
   _setIsLoading() {
     setState(() {
@@ -42,7 +42,7 @@ class _SearchBarState extends State<SearchBar>
 
   _reset() {
     setState(() {
-      _contents = List();
+      _contents = [];
       _isLoading = false;
     });
   }
@@ -56,7 +56,7 @@ class _SearchBarState extends State<SearchBar>
     if (_focusNode.hasFocus) {
       _setIsLoading();
 
-      if (_debounce?.isActive ?? false) _debounce.cancel();
+      if (_debounce.isActive) _debounce.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
         _getData();
       });
@@ -103,8 +103,8 @@ class _SearchBarState extends State<SearchBar>
     _focusNode.removeListener(_onFocusChange);
     widget.contentTypeState.removeListener(_onSearchChanged);
     _searchQuery.dispose();
-    _debounce?.cancel();
-    _contents = List();
+    _debounce.cancel();
+    _contents = [];
     _isLoading = false;
     super.dispose();
   }
@@ -163,8 +163,7 @@ class _SearchBarState extends State<SearchBar>
       focusNode: _focusNode,
       controller: _searchQuery,
       decoration: InputDecoration(
-        hintText:
-            "Add a ${widget.contentTypeState.contentType.singular}",
+        hintText: "Add a ${widget.contentTypeState.contentType.singular}",
         hintStyle: TextStyle(
           color: Color(0x45000000),
         ),

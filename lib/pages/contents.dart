@@ -9,9 +9,9 @@ class Contents extends StatelessWidget {
   final GlobalKey<AnimatedListState> listKey;
 
   Contents({
-    Key key,
-    @required this.contentType,
-    @required this.listKey,
+    Key? key,
+    required this.contentType,
+    required this.listKey,
   }) : super(key: key);
 
   @override

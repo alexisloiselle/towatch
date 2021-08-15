@@ -11,11 +11,11 @@ class SearchBarItem extends StatelessWidget {
   final VoidCallback didTap;
 
   const SearchBarItem({
-    Key key,
-    this.index,
-    this.content,
-    this.totalLength,
-    this.didTap,
+    Key? key,
+    required this.index,
+    required this.content,
+    required this.totalLength,
+    required this.didTap,
   }) : super(key: key);
 
   _handleTap() => didTap();

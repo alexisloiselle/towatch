@@ -5,12 +5,12 @@ import 'package:watchlist/extensions/string.dart';
 import 'package:watchlist/extensions/object.dart';
 
 class Show implements Content {
-  int index;
+  int? index;
   final String title;
   final String year;
   final double rating;
-  final DateTime addedOn;
-  DateTime watchedOn;
+  final DateTime? addedOn;
+  DateTime? watchedOn;
 
   @override
   ContentType get contentType => ContentType.show;
@@ -20,9 +20,9 @@ class Show implements Content {
 
   Show({
     this.index,
-    this.title,
-    this.year,
-    this.rating,
+    required this.title,
+    required this.year,
+    required this.rating,
     this.addedOn,
     this.watchedOn,
   });
@@ -39,7 +39,7 @@ class Show implements Content {
   }
 
   static List<Show> arrayFromTmdb(Map<String, dynamic> json) {
-    List<Show> shows = List();
+    List<Show> shows = [];
     final results = json['results'];
     final endRange = results.length < 3 ? results.length : 3;
 
@@ -51,15 +51,18 @@ class Show implements Content {
   }
 
   static Show fromSheets(List<Object> properties, int index) {
+    String? indexString = properties[0].cast<String>()?.asNotEmpty();
+    String? ratingString = properties[4].cast<String>()?.asNotEmpty();
+
     return Show(
-      index: int.parse(properties[0].cast<String>().asNotEmpty()),
-      title: properties[2].cast<String>(),
-      year: properties[3].cast<String>(),
-      rating: double.tryParse(properties[4].cast<String>().asNotEmpty()) ?? 0,
-      addedOn: DateTime.tryParse(properties[5].cast<String>()),
+      index: indexString == null ? null : int.tryParse(indexString),
+      title: properties[2].cast<String>() ?? "",
+      year: properties[3].cast<String>() ?? "",
+      rating: ratingString == null ? 0 : double.tryParse(ratingString) ?? 0,
+      addedOn: DateTime.tryParse(properties[5].cast<String>() ?? ""),
       watchedOn: properties.length < 7
           ? null
-          : DateTime.tryParse(properties[6].cast<String>()),
+          : DateTime.tryParse(properties[6].cast<String>() ?? ""),
     );
   }
 

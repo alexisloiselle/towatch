@@ -10,7 +10,7 @@ final moviesListKey = GlobalKey<AnimatedListState>();
 final showsListKey = GlobalKey<AnimatedListState>();
 
 main() async {
-  await DotEnv().load('.env');
+  await DotEnv().load();
   runApp(
     MultiProvider(
       providers: [
@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
 
               if (!currentFocus.hasPrimaryFocus &&
                   currentFocus.focusedChild != null) {
-                FocusManager.instance.primaryFocus.unfocus();
+                FocusManager.instance.primaryFocus?.unfocus();
               }
             },
             child: MaterialApp(

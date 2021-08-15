@@ -11,7 +11,7 @@ int _addedOnSorter(Content a, Content b) {
       ? 1
       : b.addedOn == null
           ? -1
-          : b.addedOn.compareTo(a.addedOn);
+          : b.addedOn!.compareTo(a.addedOn!);
 }
 
 int _watchedOnSorter(Content a, Content b) {
@@ -19,19 +19,19 @@ int _watchedOnSorter(Content a, Content b) {
       ? -1
       : b.watchedOn == null
           ? 1
-          : b.watchedOn.compareTo(a.watchedOn);
+          : b.watchedOn!.compareTo(a.watchedOn!);
 }
 
 class ContentsState extends ChangeNotifier {
   final GlobalKey<AnimatedListState> moviesListKey;
   final GlobalKey<AnimatedListState> showsListKey;
 
-  ListModel<Movie> _movies;
-  ListModel<Show> _shows;
+  late ListModel<Movie> _movies;
+  late ListModel<Show> _shows;
 
   ContentsState({
-    this.moviesListKey,
-    this.showsListKey,
+    required this.moviesListKey,
+    required this.showsListKey,
   }) {
     _movies = ListModel(
       listKey: moviesListKey,
@@ -64,13 +64,15 @@ class ContentsState extends ChangeNotifier {
   ListModel<Movie> get moviesModel => _movies;
   ListModel<Show> get showsModel => _shows;
 
-  void add(Content content) {
+  void add(Content? content) {
+    if (content == null) return;
+
     switch (content.contentType) {
       case ContentType.movie:
-        _movies.insert(0, content);
+        _movies.insert(0, content as Movie);
         break;
       default:
-        _shows.insert(0, content);
+        _shows.insert(0, content as Show);
         break;
     }
     notifyListeners();
@@ -103,7 +105,9 @@ class ContentsState extends ChangeNotifier {
     listModel.removeAt(index);
   }
 
-  void addAll(List<Content> contents) {
+  void addAll(List<Content>? contents) {
+    if (contents == null) return;
+
     final movies = contents
         .where((c) => c is Movie)
         .map((e) => e as Movie)

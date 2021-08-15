@@ -11,8 +11,8 @@ class ContentCell extends StatefulWidget {
   final Content content;
 
   const ContentCell({
-    Key key,
-    @required this.content,
+    Key? key,
+    required this.content,
   }) : super(key: key);
 
   @override
@@ -22,7 +22,7 @@ class ContentCell extends StatefulWidget {
 class _ContentCellState extends State<ContentCell>
     with SingleTickerProviderStateMixin {
   bool _checkmarkLoading = false;
-  AnimationController _controller;
+  late AnimationController _controller;
 
   _onCheckmarkTap() async {
     setState(() {
