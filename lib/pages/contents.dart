@@ -24,7 +24,7 @@ class Contents extends StatelessWidget {
               : state.showsModel;
 
           return AnimatedList(
-            padding: EdgeInsets.only(bottom: 24, top: 156),
+            padding: EdgeInsets.only(bottom: 24, top: 200),
             key: listKey,
             initialItemCount: contentsModel.length,
             itemBuilder: (context, index, animation) {

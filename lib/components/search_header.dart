@@ -93,6 +93,7 @@ class _SearchHeaderState extends State<SearchHeader> {
           children: [
             buildBackdrop(width, _y),
             buildSearchBarWrapper(width),
+            if (!_isSignIn) buildFilters()
           ],
         ),
       ),
@@ -115,6 +116,51 @@ class _SearchHeaderState extends State<SearchHeader> {
               contentTypeState: state,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Transform buildFilters() {
+    return Transform.translate(
+      offset: Offset(0, -4),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 32),
+        child: Row(
+          children: <Widget>[
+            Container(
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.black,
+                  width: 1,
+                  style: BorderStyle.solid,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    offset: Offset(2, 2),
+                    blurRadius: 0,
+                  )
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Center(
+                  child: Text(
+                    "NOT WATCHED",
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
