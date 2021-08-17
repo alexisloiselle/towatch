@@ -32,7 +32,7 @@ class _SearchBarState extends State<SearchBar>
   final _focusNode = FocusNode();
   List<Content> _contents = [];
   bool _isLoading = false;
-  late Timer _debounce;
+  Timer? _debounce;
 
   _setIsLoading() {
     setState(() {
@@ -56,7 +56,7 @@ class _SearchBarState extends State<SearchBar>
     if (_focusNode.hasFocus) {
       _setIsLoading();
 
-      if (_debounce.isActive) _debounce.cancel();
+      if (_debounce != null && _debounce!.isActive) _debounce!.cancel();
       _debounce = Timer(const Duration(milliseconds: 500), () {
         _getData();
       });
@@ -103,7 +103,7 @@ class _SearchBarState extends State<SearchBar>
     _focusNode.removeListener(_onFocusChange);
     widget.contentTypeState.removeListener(_onSearchChanged);
     _searchQuery.dispose();
-    _debounce.cancel();
+    _debounce?.cancel();
     _contents = [];
     _isLoading = false;
     super.dispose();

@@ -38,6 +38,7 @@ class SearchBarItem extends StatelessWidget {
             ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
                 content.year.asNotEmpty() != null
                     ? Row(

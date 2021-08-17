@@ -132,6 +132,7 @@ class _ContentCellState extends State<ContentCell>
             ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
                   widget.content.year,

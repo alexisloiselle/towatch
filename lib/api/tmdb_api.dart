@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:watchlist/models/movie.dart';
 import 'package:watchlist/models/show.dart';
 
-final String? apiKey = DotEnv().env['TMDB_API_KEY'];
+final String? apiKey = dotenv.env['TMDB_API_KEY'];
 
 final String baseUrl = "https://api.themoviedb.org/3";
 final String searchPath = "/search";

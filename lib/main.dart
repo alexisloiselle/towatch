@@ -9,8 +9,8 @@ import 'package:watchlist/state/contents_state.dart';
 final moviesListKey = GlobalKey<AnimatedListState>();
 final showsListKey = GlobalKey<AnimatedListState>();
 
-main() async {
-  await DotEnv().load();
+Future main() async {
+  await dotenv.load();
   runApp(
     MultiProvider(
       providers: [
